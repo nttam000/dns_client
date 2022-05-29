@@ -1,4 +1,3 @@
-#[derive(Debug)]
 pub enum DomainName {
     LiteralDomainName(String),
     LabelToDomainName(u16),
@@ -7,8 +6,8 @@ pub enum DomainName {
 const LENGTH_OF_LABEL_DOMAIN:u16 = 2;
 
 impl DomainName {
-    pub fn new(domain_name: String) -> Self {
-        Self::LiteralDomainName(domain_name)
+    pub fn new(domain_name: &String) -> Self {
+        Self::LiteralDomainName(domain_name.clone())
     }
 
     pub fn encode(&self) -> Vec<u8> {
@@ -96,7 +95,7 @@ impl DomainName {
         question.remove(0);
 
         let domain_name_str = String::from_utf8(question).expect("trust me :D");
-        let domain_name = Self::new(domain_name_str);
+        let domain_name = Self::new(&domain_name_str);
 
         (
             domain_name,

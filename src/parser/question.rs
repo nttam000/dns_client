@@ -1,8 +1,7 @@
-use crate::dns_types::{ QType, QClass };
-use crate::dns_types;
-use crate::domain_name::DomainName;
+use super::dns_types::{ QType, QClass };
+use super::dns_types;
+use super::domain_name::DomainName;
 
-#[derive(Debug)]
 pub struct Question {
     // todo: technically, you can query more than 1 domain at a time
     // but for now, just 1 is allows
@@ -10,9 +9,9 @@ pub struct Question {
 }
 
 impl Question {
-    pub fn new(domain_name: String) -> Self {
+    pub fn new(domain_name: &String) -> Self {
         Self {
-            entry: QuestionEntry::new(domain_name)
+            entry: QuestionEntry::new(&domain_name)
         }
     }
 
@@ -27,7 +26,6 @@ impl Question {
     }
 }
 
-#[derive(Debug)]
 struct QuestionEntry {
     q_name: DomainName,
     q_type: QType,
@@ -35,12 +33,12 @@ struct QuestionEntry {
 }
 
 impl QuestionEntry {
-    fn new(domain_name: String) -> Self {
+    fn new(domain_name: &String) -> Self {
 
         assert!(domain_name.len() < 256);
 
         Self {
-            q_name: DomainName::new(domain_name),
+            q_name: DomainName::new(&domain_name),
             q_type: QType::A,
             q_class: QClass::In,
         }

@@ -1,6 +1,5 @@
-use crate::dns_types::{RCode};
+use super::dns_types::{RCode};
 
-#[derive(Debug)]
 pub struct Header {
     id: u16, //random generate, used to match query and response
     header_flags: HeaderFlags,
@@ -10,7 +9,6 @@ pub struct Header {
     ar_count: u16,
 }
 
-#[derive(Debug)]
 pub struct HeaderFlags {
     qr: bool,
     op_code: u8,

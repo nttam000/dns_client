@@ -1,7 +1,7 @@
 use std::net::{SocketAddr, IpAddr, Ipv4Addr};
-use crate::api::{DnsResult, DnsError};
-use crate::udp_controller::UdpController;
-use crate::message::Message;
+use crate::{DnsResult, DnsError};
+use crate::net::udp_controller::UdpController;
+use crate::parser::message::Message;
 
 pub struct Core {
     udp_controller: UdpController,
@@ -10,12 +10,16 @@ pub struct Core {
 impl Core {
     const DEFAULT_UDP_BUFFER: u16 = 1024;
 
+    // todo: what address should be used here
+    const DEFAULT_INTERFACE_IP: IpAddr = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 199));
+
     const DEFAULT_DNS_SERVER_IP: IpAddr = IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8));
     const DEFAULT_DNS_SERVER_PORT: u16 = 53;
 
     pub fn new() -> Self {
         let interface = SocketAddr::new(
-            IpAddr::V4(Ipv4Addr::new(192, 168, 1, 199)), 0
+            Self::DEFAULT_INTERFACE_IP,
+            0
         );
 
         let server = SocketAddr::new (
@@ -29,7 +33,13 @@ impl Core {
         }
     }
 
-    pub fn send_query(&self, domain: String) -> Result<DnsResult, DnsError> {
+    pub fn send_query(&self, domain: &String) -> Result<DnsResult, DnsError> {
+    }
+
+    pub fn send_query_with_server(&self, domain: &String) -> Result<DnsResult, DnsError> {
+    }
+
+    fn send_query_to_network_layer(&self, domain: &String) -> Result<DnsResult, DnsError> {
         let msg = Message::new(domain);
 
         let encoded_msg = msg.encode();

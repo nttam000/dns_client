@@ -1,14 +1,14 @@
-use dns_client::api;
+// example code
+use dns_client;
 
 fn main() {
-    // example code
-    let query_result = api::query(String::from("quora.com"));
+    let query_result = dns_client::query(&String::from("quora.com"));
     match query_result {
         Ok(value) => {
-            println!("{:?}", value);
+            // println!("{:?}", value);
         }
         Err(error) => {
-            println!("{:?}", error);
+            // println!("{:?}", error);
         }
     }
 }

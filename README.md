@@ -1,7 +1,6 @@
 # dns_client
 
-This is a simple DNS client.
-I'm working on this as I'm learning Rust and networking stuff
+This is a simple DNS client
 
 Todo
 - multi-thread
@@ -9,4 +8,6 @@ Todo
 - timeout handling, retransmission
 - fix all "todo" tags
 - fix all warnings
+- fix all 'expect's and 'unwrap's
 - testcases
+- check when to use &, &mut, moving
