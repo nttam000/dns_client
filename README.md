@@ -13,13 +13,13 @@ This is a simple DNS client
 
 ### Flow
 
-Api
- |
-Core
- |
-QueryHandler (thread pool)
- |
-UdpController (singleton)
+Api  
+ |  
+Core  
+ |  
+QueryHandler (thread pool)  
+ |  
+UdpController (singleton)  
 
 ## Todo
 * generate_id for each query, and match it with response
