@@ -22,6 +22,9 @@ QueryHandler (thread pool)
 UdpController (singleton)
 
 ## Todo
+* generate_id for each query, and match it with response
+* read configuration from file (or something else), rather than hardcode
+* support IPv6
 * multi-thread
 * caching
 * timeout handling, retransmission

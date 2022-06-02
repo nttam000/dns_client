@@ -30,15 +30,18 @@ impl DnsError {
             error_code
         }
     }
+
+    pub fn get_error_code(&self) -> u8 {
+        self.error_code
+    }
 }
 
-pub fn query(domain: &String) -> Result<DnsResult, DnsError> {
+pub fn query(domain: &str) -> Result<DnsResult, DnsError> {
     let core = Core::new();
     core.send_query(domain)
 }
 
-pub fn query_with_server(domain: &String, server_ip: &String) -> Result<DnsResult, DnsError> {
+pub fn query_with_server(domain: &str, server_ip: &str) -> Result<DnsResult, DnsError> {
     let core = Core::new();
     core.send_query_with_server(domain, &server_ip)
-    // core.send_query(domain)
 }

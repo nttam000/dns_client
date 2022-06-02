@@ -6,8 +6,9 @@ pub enum DomainName {
 const LENGTH_OF_LABEL_DOMAIN:u16 = 2;
 
 impl DomainName {
-    pub fn new(domain_name: &String) -> Self {
-        Self::LiteralDomainName(domain_name.clone())
+    pub fn new(domain_name: &str) -> Self {
+        // this will create a new String
+        Self::LiteralDomainName(String::from(domain_name))
     }
 
     pub fn encode(&self) -> Vec<u8> {
@@ -22,7 +23,7 @@ impl DomainName {
     }
 
     // todo: ugly function, improve it
-    fn encode_literal_domain(domain_name: &String) -> Vec<u8> {
+    fn encode_literal_domain(domain_name: &str) -> Vec<u8> {
         let mut q_name = String::from(".");
         q_name.push_str(domain_name);
 

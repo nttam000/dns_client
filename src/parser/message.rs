@@ -14,7 +14,7 @@ pub struct Message {
 }
 
 impl Message {
-    pub fn new(domain_name: &String) -> Self {
+    pub fn new(domain_name: &str) -> Self {
         Self {
             header: Header::new(),
             question: Question::new(&domain_name),
@@ -86,9 +86,5 @@ impl Message {
 
     pub fn get_answers(&self) -> &ResourceRecords {
         &self.answers
-    }
-
-    fn generate_id() -> u16 {
-        unimplemented!();
     }
 }

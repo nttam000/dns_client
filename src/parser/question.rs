@@ -9,7 +9,7 @@ pub struct Question {
 }
 
 impl Question {
-    pub fn new(domain_name: &String) -> Self {
+    pub fn new(domain_name: &str) -> Self {
         Self {
             entry: QuestionEntry::new(&domain_name)
         }
@@ -33,7 +33,7 @@ struct QuestionEntry {
 }
 
 impl QuestionEntry {
-    fn new(domain_name: &String) -> Self {
+    fn new(domain_name: &str) -> Self {
 
         assert!(domain_name.len() < 256);
 

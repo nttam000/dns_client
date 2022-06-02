@@ -76,7 +76,6 @@ impl Header {
         (header, 12)
     }
 
-    pub fn get_qd_count(&self) -> u16 { self.qd_count }
     pub fn get_an_count(&self) -> u16 { self.an_count }
     pub fn get_ns_count(&self) -> u16 { self.ns_count }
     pub fn get_ar_count(&self) -> u16 { self.ar_count }

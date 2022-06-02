@@ -43,7 +43,7 @@ impl ResourceRecords {
 impl ResourceRecord {
     pub fn new() -> Self {
         Self {
-            q_name: DomainName::new(&String::from("")),
+            q_name: DomainName::new(""),
             q_type: QType::A,
             q_class: QClass::In,
             ttl: 0,
