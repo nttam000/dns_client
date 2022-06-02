@@ -2,31 +2,38 @@ use std::net::{SocketAddr, IpAddr, Ipv4Addr};
 use crate::{DnsResult, DnsError};
 use crate::net::udp_controller::UdpController;
 use crate::parser::message::Message;
+use crate::config::config_handler::CONFIG;
 
 pub struct Core {
     udp_controller: UdpController,
+    default_servers: Vec<SocketAddr>
 }
 
 impl Core {
-    const DEFAULT_UDP_BUFFER: usize = 1024;
-
-    // todo: what address should be used here
-    const DEFAULT_INTERFACE_IP: IpAddr = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 100));
-
     pub fn new() -> Self {
-        let interface = SocketAddr::new(
-            Self::DEFAULT_INTERFACE_IP,
-            0
-        );
+        let local_interface =
+            Self::get_server_ip_from_string(&CONFIG.local_interface);
+
+        let mut default_servers: Vec<SocketAddr> = Vec::new();
+        for server in &CONFIG.default_servers {
+            default_servers.push(Self::get_server_ip_from_string(server));
+        }
+
+        let udp_controller =
+            UdpController::new(CONFIG.udp_buffer_size, local_interface);
 
         Self {
-            udp_controller: UdpController::new(
-                Self::DEFAULT_UDP_BUFFER, interface)
+            udp_controller,
+            default_servers
         }
     }
 
     pub fn send_query(&self, domain: &str) -> Result<DnsResult, DnsError> {
-        self.send_query_to_network_layer(&domain, &Self::get_default_server())
+        let default_server = &Self::get_default_server();
+        match default_server {
+            Some(server) => self.send_query_to_network_layer(&domain, server),
+            None => panic!()
+        }
     }
 
     pub fn send_query_with_server(&self, domain: &str, server: &str)
@@ -42,8 +49,11 @@ impl Core {
         }
     }
 
-    fn get_default_server() -> SocketAddr {
-        Self::get_server_ip_from_string("8.8.8.8:53")
+    fn get_default_server() -> Option<SocketAddr> {
+        if CONFIG.default_servers.len() == 0 {
+            return None;
+        }
+        Some(Self::get_server_ip_from_string(&CONFIG.default_servers[0]))
     }
 
     fn send_query_to_network_layer(&self, domain: &str, server: &SocketAddr)

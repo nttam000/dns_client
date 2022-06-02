@@ -8,11 +8,12 @@ const CONFIG_FILE_PATH: &str = "config.toml";
 
 #[derive(Debug)]
 pub struct Config {
-    pub udp_buffer_size: u16,
-    protocol: String,
-    tcp_fallback: bool,
-    edns_enable: bool,
-    default_dns_servers: Vec<String>
+    pub udp_buffer_size: usize,
+    pub protocol: String,
+    pub tcp_fallback: bool,
+    pub edns_enable: bool,
+    pub local_interface: String,
+    pub default_servers: Vec<String>
 }
 
 lazy_static! {
@@ -46,7 +47,12 @@ pub fn load_config() -> Config {
         _ => { panic!("") }
     };
 
-    let default_dns_servers = match &toml_value["default_dns_servers"] {
+    let local_interface = match &toml_value["local_interface"] {
+        Value::String(value) => value.clone(),
+        _ => { panic!("") }
+    };
+
+    let default_servers = match &toml_value["default_servers"] {
         Value::Array(vec) => {
             let mut ips: Vec<String> = Vec::new();
             for ip in vec {
@@ -59,12 +65,14 @@ pub fn load_config() -> Config {
         _ => { panic!("") }
     };
 
+    assert!(udp_buffer_size >= 512);
     let result = Config {
-        udp_buffer_size: udp_buffer_size as u16,
+        udp_buffer_size: udp_buffer_size as usize,
         protocol,
         tcp_fallback,
         edns_enable,
-        default_dns_servers
+        local_interface,
+        default_servers
     };
 
     println!("{:?}", result);

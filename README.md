@@ -32,6 +32,7 @@ UdpController (singleton)
 * fix all "todo" tags
 * fix all warnings
 * fix all 'expect's and 'unwrap's
+* fix all 'panic!'s
 * testcases
 * check when to use &, &mut, moving
 * get list of interfaces
