@@ -1,6 +1,7 @@
 mod parser;
 mod net;
 mod core;
+pub mod config;
 
 use crate::core::core::Core;
 
