@@ -1,4 +1,3 @@
-#[derive(Debug)]
 pub enum QType {
     A,
     Ns,
@@ -8,7 +7,6 @@ pub enum QType {
     FutureUse,
 }
 
-#[derive(Debug)]
 pub enum QClass {
     In,
     Cs,
@@ -17,7 +15,6 @@ pub enum QClass {
     FutureUse,
 }
 
-#[derive(Debug)]
 #[derive(PartialEq)] // todo: learn this
 pub enum RCode {
     NoError,

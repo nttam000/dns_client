@@ -1,11 +1,10 @@
 // Please refer RFC1035, section 4. MESSAGES and RFC6895
 // todo: Request and Response should share a same trait, really?
 
-use crate::question::Question;
-use crate::header::{ Header, HeaderFlags };
-use crate::resource_record::{ ResourceRecord, ResourceRecords };
+use super::question::Question;
+use super::header::Header;
+use super::resource_record::{ ResourceRecord, ResourceRecords };
 
-#[derive(Debug)]
 pub struct Message {
     header: Header,
     question: Question,
@@ -15,10 +14,10 @@ pub struct Message {
 }
 
 impl Message {
-    pub fn new(domain_name: String) -> Self {
+    pub fn new(domain_name: &str) -> Self {
         Self {
             header: Header::new(),
-            question: Question::new(domain_name),
+            question: Question::new(&domain_name),
             answers: ResourceRecords::new(),
             authorities: ResourceRecords::new(),
             additionals: ResourceRecords::new(),
@@ -87,9 +86,5 @@ impl Message {
 
     pub fn get_answers(&self) -> &ResourceRecords {
         &self.answers
-    }
-
-    fn generate_id() -> u16 {
-        unimplemented!();
     }
 }

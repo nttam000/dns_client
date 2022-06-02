@@ -1,13 +1,11 @@
-use crate::dns_types::{QType, QClass};
-use crate::dns_types;
-use crate::domain_name::DomainName;
+use super::dns_types::{QType, QClass};
+use super::dns_types;
+use super::domain_name::DomainName;
 
-#[derive(Debug)]
 pub struct ResourceRecords {
     resource_records: Vec<ResourceRecord>
 }
 
-#[derive(Debug)]
 pub struct ResourceRecord {
     q_name: DomainName,
     q_type: QType,
@@ -45,7 +43,7 @@ impl ResourceRecords {
 impl ResourceRecord {
     pub fn new() -> Self {
         Self {
-            q_name: DomainName::new(String::from("")),
+            q_name: DomainName::new(""),
             q_type: QType::A,
             q_class: QClass::In,
             ttl: 0,
