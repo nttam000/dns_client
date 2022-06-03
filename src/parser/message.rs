@@ -3,25 +3,34 @@
 
 use super::header::Header;
 use super::question::Question;
-use super::resource_record::{ResourceRecord, ResourceRecords};
+use super::record::*;
 
 pub struct Message {
     header: Header,
     question: Question,
-    answers: ResourceRecords,
-    authorities: ResourceRecords,
-    additionals: ResourceRecords,
+    answers: Records,
+    authorities: Records,
+    additionals: Records,
 }
 
 impl Message {
     pub fn new(domain_name: &str) -> Self {
-        Self {
+        let mut msg = Self {
             header: Header::new(),
             question: Question::new(&domain_name),
-            answers: ResourceRecords::new(),
-            authorities: ResourceRecords::new(),
-            additionals: ResourceRecords::new(),
-        }
+            answers: Records::new(),
+            authorities: Records::new(),
+            additionals: Records::new(),
+        };
+        msg.header.inc_qd_count();
+        msg
+    }
+
+    pub fn new_edns(domain_name: &str) -> Self {
+        let mut msg = Self::new(domain_name);
+        let opt_rr = OptRecord::new(1280);
+        msg.add_additional_records(opt_rr.record);
+        msg
     }
 
     pub fn encode(&self) -> Vec<u8> {
@@ -50,26 +59,26 @@ impl Message {
         let (question, parsed_count) = Question::parse(msg, pos);
         pos += parsed_count as usize;
 
-        let mut answers = ResourceRecords::new();
+        let mut answers = Records::new();
 
         for _ in 0..header.get_an_count() {
-            let (answer, parsed_count) = ResourceRecord::parse(msg, pos);
+            let (answer, parsed_count) = Record::parse(msg, pos);
             pos += parsed_count as usize;
 
             answers.push(answer);
         }
 
-        let mut authorities = ResourceRecords::new();
+        let mut authorities = Records::new();
         for _ in 0..header.get_ns_count() {
-            let (authority, parsed_count) = ResourceRecord::parse(msg, pos);
+            let (authority, parsed_count) = Record::parse(msg, pos);
             pos += parsed_count as usize;
 
             authorities.push(authority);
         }
 
-        let mut additionals = ResourceRecords::new();
+        let mut additionals = Records::new();
         for _ in 0..header.get_ar_count() {
-            let (additional, parsed_count) = ResourceRecord::parse(msg, pos);
+            let (additional, parsed_count) = Record::parse(msg, pos);
             pos += parsed_count as usize;
 
             additionals.push(additional);
@@ -84,7 +93,12 @@ impl Message {
         }
     }
 
-    pub fn get_answers(&self) -> &ResourceRecords {
+    pub fn get_answers(&self) -> &Records {
         &self.answers
+    }
+
+    pub fn add_additional_records(&mut self, record: Record) {
+        self.additionals.push(record);
+        self.header.inc_ar_count();
     }
 }

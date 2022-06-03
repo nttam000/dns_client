@@ -32,8 +32,8 @@ pub enum RCode {
 }
 
 impl QType {
-    pub fn get_value(&self) -> Option<u16> {
-        match self {
+    pub fn get_value(q_type: Self) -> Option<u16> {
+        match q_type {
             QType::A => Some(1),
             QType::Ns => Some(2),
             QType::CName => Some(5),
@@ -56,8 +56,8 @@ impl QType {
 }
 
 impl QClass {
-    pub fn get_value(&self) -> Option<u16> {
-        match self {
+    pub fn get_value(q_class: Self) -> Option<u16> {
+        match q_class {
             QClass::In => Some(1),
             QClass::Cs => Some(2),
             QClass::Ch => Some(3),
@@ -115,28 +115,20 @@ impl RCode {
     }
 }
 
-pub fn parse_type_and_class(msg: &[u8], offset: usize) -> (QType, QClass, u16) {
-    let q_type = QType::get_q_type(
-        (msg[offset + 0] as u16) << 8 | (msg[offset + 1] as u16),
-    );
-
-    let q_class = QClass::get_q_class(
-        (msg[offset + 2] as u16) << 8 | (msg[offset + 3] as u16),
-    );
+pub fn parse_type_and_class(msg: &[u8], offset: usize) -> (u16, u16, u16) {
+    let q_type = (msg[offset + 0] as u16) << 8 | (msg[offset + 1] as u16);
+    let q_class = (msg[offset + 2] as u16) << 8 | (msg[offset + 3] as u16);
 
     (q_type, q_class, 4)
 }
 
-pub fn encode_type_and_class(q_type: &QType, q_class: &QClass) -> Vec<u8> {
+pub fn encode_type_and_class(q_type: u16, q_class: u16) -> Vec<u8> {
     let mut result = Vec::new();
 
-    let q_type_value = q_type.get_value().unwrap();
-    let q_class_value = q_class.get_value().unwrap();
-
-    result.push((q_type_value >> 8) as u8);
-    result.push((q_type_value >> 0) as u8);
-    result.push((q_class_value >> 8) as u8);
-    result.push((q_class_value >> 0) as u8);
+    result.push((q_type >> 8) as u8);
+    result.push((q_type >> 0) as u8);
+    result.push((q_class >> 8) as u8);
+    result.push((q_class >> 0) as u8);
 
     result
 }

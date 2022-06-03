@@ -52,7 +52,7 @@ impl Core {
         }
     }
 
-    // todo: don't hard code like that (0)
+    // todo: don't hard code like that (the index 0)
     fn get_default_server(&self) -> Option<SocketAddr> {
         if self.default_servers.len() == 0 {
             return None;
@@ -65,7 +65,7 @@ impl Core {
         domain: &str,
         server: &SocketAddr,
     ) -> Result<DnsResult, DnsError> {
-        let msg = Message::new(domain);
+        let msg = Message::new_edns(domain);
 
         let encoded_msg = msg.encode();
 
@@ -76,7 +76,7 @@ impl Core {
         match encoded_response {
             Some(response) => {
                 let msg = Message::parse(&response);
-                let answers = msg.get_answers().get_resource_records();
+                let answers = msg.get_answers().get_records();
 
                 let mut result = Vec::new();
                 for answer in answers {

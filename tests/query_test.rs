@@ -27,6 +27,11 @@ fn query_with_server() {
     print_list_of_ips(&answers);
 }
 
+#[test]
+fn quick_run() {
+    // this function is for whatever needs a quick check
+}
+
 fn print_list_of_ips(ips: &Vec<Vec<u8>>) {
     for ip in ips {
         for (id, byte) in ip.iter().enumerate() {

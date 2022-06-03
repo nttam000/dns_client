@@ -24,6 +24,11 @@ impl DomainName {
 
     // todo: ugly function, improve it
     fn encode_literal_domain(domain_name: &str) -> Vec<u8> {
+        // root domain, for OPT record
+        if domain_name.len() == 1 && domain_name.as_bytes()[0] == 0 {
+            return vec![0];
+        }
+
         let mut q_name = String::from(".");
         q_name.push_str(domain_name);
 
@@ -84,6 +89,12 @@ impl DomainName {
     fn parse_literal_domain_name(msg: &[u8], offset: usize) -> (Self, u16) {
         let (mut question, parsed_count) =
             Self::extract_domain_name_field(msg, offset);
+
+        // todo: workaround
+        if parsed_count == 1 {
+            let domain_name = Self::new("\0");
+            return (domain_name, 1);
+        }
 
         let mut pos = 0;
         loop {

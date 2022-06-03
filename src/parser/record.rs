@@ -2,50 +2,60 @@ use super::dns_types;
 use super::dns_types::{QClass, QType};
 use super::domain_name::DomainName;
 
-pub struct ResourceRecords {
-    resource_records: Vec<ResourceRecord>,
+pub struct Records {
+    pub records: Vec<Record>,
 }
 
-pub struct ResourceRecord {
-    q_name: DomainName,
-    q_type: QType,
-    q_class: QClass,
-    ttl: u32,
+pub struct Record {
+    pub q_name: DomainName,
+    pub q_type: u16,
+    pub q_class: u16,
+    pub ttl: u32,
     rd_length: u16,
     r_data: Vec<u8>,
 }
 
-impl ResourceRecords {
+// RFC6891, 6.1.2.  Wire Format
+pub struct OptRecord {
+    pub record: Record,
+    udp_payload_size: u16,
+    extended_r_code: u8,
+    version: u8,
+    do_bit: bool,
+    z: u16, //15 bits
+}
+
+impl Records {
     pub fn new() -> Self {
         Self {
-            resource_records: Vec::new(),
+            records: Vec::new(),
         }
     }
 
-    pub fn push(&mut self, resource_record: ResourceRecord) {
-        self.resource_records.push(resource_record)
+    pub fn push(&mut self, record: Record) {
+        self.records.push(record)
     }
 
     pub fn encode(&self) -> Vec<u8> {
         let mut rrs = Vec::new();
-        for rr in &self.resource_records {
+        for rr in &self.records {
             let mut encoded_rr = rr.encode();
             rrs.append(&mut encoded_rr);
         }
         rrs
     }
 
-    pub fn get_resource_records(&self) -> &Vec<ResourceRecord> {
-        &self.resource_records
+    pub fn get_records(&self) -> &Vec<Record> {
+        &self.records
     }
 }
 
-impl ResourceRecord {
+impl Record {
     pub fn new() -> Self {
         Self {
             q_name: DomainName::new(""),
-            q_type: QType::A,
-            q_class: QClass::In,
+            q_type: QType::get_value(QType::A).expect("100% sure"),
+            q_class: QClass::get_value(QClass::In).expect("100% sure"),
             ttl: 0,
             rd_length: 0,
             r_data: Vec::new(),
@@ -56,7 +66,7 @@ impl ResourceRecord {
         let mut result = Vec::new();
         let mut domain_name = self.q_name.encode();
         let mut type_and_class =
-            dns_types::encode_type_and_class(&self.q_type, &self.q_class);
+            dns_types::encode_type_and_class(self.q_type, self.q_class);
 
         result.append(&mut domain_name);
         result.append(&mut type_and_class);
@@ -136,5 +146,49 @@ impl ResourceRecord {
 
     pub fn get_data(&self) -> &Vec<u8> {
         &self.r_data
+    }
+
+    pub fn set_q_name(&mut self, domain_name: &str) {
+        let name = DomainName::new(domain_name);
+        self.q_name = name;
+    }
+
+    pub fn set_q_type(&mut self, q_type: QType) {
+        let q_type_value = QType::get_value(q_type);
+        if let Some(value) = q_type_value {
+            self.q_type = value;
+        }
+        // todo: else case?
+    }
+
+    pub fn set_q_class(&mut self, q_class: QClass) {
+        let q_class_value = QClass::get_value(q_class);
+        if let Some(value) = q_class_value {
+            self.q_class = value;
+        }
+        // todo: else case?
+    }
+}
+
+impl OptRecord {
+    pub fn new(udp_payload_size: u16) -> Self {
+        let mut rr = Record::new();
+        rr.set_q_name("\0"); //RFC6891, root domain
+        rr.set_q_type(QType::Opt);
+        rr.q_class = udp_payload_size;
+
+        OptRecord {
+            record: rr,
+            udp_payload_size: udp_payload_size,
+            extended_r_code: 0,
+            version: 0,
+            do_bit: false,
+            z: 0,
+        }
+    }
+
+    pub fn encode(&self) -> Vec<u8> {
+        let result = self.record.encode();
+        result
     }
 }

@@ -28,8 +28,8 @@ impl Question {
 
 struct QuestionEntry {
     q_name: DomainName,
-    q_type: QType,
-    q_class: QClass,
+    q_type: u16,
+    q_class: u16,
 }
 
 impl QuestionEntry {
@@ -38,15 +38,15 @@ impl QuestionEntry {
 
         Self {
             q_name: DomainName::new(&domain_name),
-            q_type: QType::A,
-            q_class: QClass::In,
+            q_type: QType::get_value(QType::A).expect("100% sure"),
+            q_class: QClass::get_value(QClass::In).expect("100% sure"),
         }
     }
 
     fn encode(&self) -> Vec<u8> {
         let mut result = self.q_name.encode();
         let mut type_and_class =
-            dns_types::encode_type_and_class(&self.q_type, &self.q_class);
+            dns_types::encode_type_and_class(self.q_type, self.q_class);
 
         result.append(&mut type_and_class);
         result

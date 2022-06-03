@@ -1,4 +1,5 @@
 use super::dns_types::RCode;
+use rand::Rng;
 
 pub struct Header {
     id: u16, // todo: random generate, used to match query and response
@@ -25,9 +26,10 @@ pub struct HeaderFlags {
 impl Header {
     pub fn new() -> Self {
         Self {
-            id: 0, //todo: call generated_id() from somewhere, maybe a helper
+            // todo: keep track of these to avoid duplicated
+            id: Self::generate_random_id(),
             header_flags: HeaderFlags::new(),
-            qd_count: 1, // todo:
+            qd_count: 0,
             an_count: 0,
             ns_count: 0,
             ar_count: 0,
@@ -92,6 +94,18 @@ impl Header {
     pub fn get_ar_count(&self) -> u16 {
         self.ar_count
     }
+
+    pub fn inc_qd_count(&mut self) {
+        self.qd_count += 1;
+    }
+
+    pub fn inc_ar_count(&mut self) {
+        self.ar_count += 1;
+    }
+
+    fn generate_random_id() -> u16 {
+        rand::thread_rng().gen_range(1..=65535)
+    }
 }
 
 impl HeaderFlags {
@@ -112,7 +126,6 @@ impl HeaderFlags {
 
     // todo: this needs to be tested carefully
     pub fn encode(&self) -> Vec<u8> {
-        // let mut result: Vec<u8> = Vec::from([0b0000_0000, 0b0000_0000]);
         let mut result: Vec<u8> = Vec::from([0, 0]);
 
         if self.qr {
