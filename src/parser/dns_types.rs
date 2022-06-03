@@ -44,7 +44,6 @@ impl QType {
     }
 
     pub fn get_q_type(value: u16) -> Self {
-
         match value {
             1 => QType::A,
             2 => QType::Ns,
@@ -68,7 +67,6 @@ impl QClass {
     }
 
     pub fn get_q_class(value: u16) -> Self {
-
         match value {
             1 => QClass::In,
             2 => QClass::Cs,
@@ -98,7 +96,6 @@ impl RCode {
     }
 
     pub fn get_r_code(value: u8) -> Self {
-
         // r_code value has only 4 bits.
         assert!(value < 16);
         match value {
@@ -119,15 +116,12 @@ impl RCode {
 }
 
 pub fn parse_type_and_class(msg: &[u8], offset: usize) -> (QType, QClass, u16) {
-
     let q_type = QType::get_q_type(
-        (msg[offset + 0] as u16) << 8 |
-        (msg[offset + 1] as u16)
+        (msg[offset + 0] as u16) << 8 | (msg[offset + 1] as u16),
     );
 
     let q_class = QClass::get_q_class(
-        (msg[offset + 2] as u16) << 8 |
-        (msg[offset + 3] as u16)
+        (msg[offset + 2] as u16) << 8 | (msg[offset + 3] as u16),
     );
 
     (q_type, q_class, 4)

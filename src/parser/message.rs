@@ -1,9 +1,9 @@
 // Please refer RFC1035, section 4. MESSAGES and RFC6895
 // todo: Request and Response should share a same trait, really?
 
-use super::question::Question;
 use super::header::Header;
-use super::resource_record::{ ResourceRecord, ResourceRecords };
+use super::question::Question;
+use super::resource_record::{ResourceRecord, ResourceRecords};
 
 pub struct Message {
     header: Header,

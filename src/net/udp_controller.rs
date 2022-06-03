@@ -1,7 +1,7 @@
 // todo: for now, we only deal with IPv4
 
-use std::net::UdpSocket;
 use std::net::SocketAddr;
+use std::net::UdpSocket;
 
 pub struct UdpController {
     buffer_size: usize,
@@ -16,14 +16,17 @@ impl UdpController {
         }
     }
 
-    pub fn send_query_to_server(&self, encoded_msg: &Vec<u8>, server: &SocketAddr) ->
-    Option<Vec<u8>> {
+    pub fn send_query_to_server(
+        &self,
+        encoded_msg: &Vec<u8>,
+        server: &SocketAddr,
+    ) -> Option<Vec<u8>> {
         let socket = self.create_socket();
 
         socket.connect(&server).expect("connect function failed");
         socket.send(&encoded_msg).expect("could not send to server");
 
-        let mut buffer: Vec<u8> = vec!(0; self.buffer_size);
+        let mut buffer: Vec<u8> = vec![0; self.buffer_size];
 
         match socket.recv(&mut buffer) {
             Ok(received) => {

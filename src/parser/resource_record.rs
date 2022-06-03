@@ -1,9 +1,9 @@
-use super::dns_types::{QType, QClass};
 use super::dns_types;
+use super::dns_types::{QClass, QType};
 use super::domain_name::DomainName;
 
 pub struct ResourceRecords {
-    resource_records: Vec<ResourceRecord>
+    resource_records: Vec<ResourceRecord>,
 }
 
 pub struct ResourceRecord {
@@ -16,9 +16,9 @@ pub struct ResourceRecord {
 }
 
 impl ResourceRecords {
-    pub fn new() -> Self{
+    pub fn new() -> Self {
         Self {
-            resource_records: Vec::new()
+            resource_records: Vec::new(),
         }
     }
 
@@ -29,7 +29,7 @@ impl ResourceRecords {
     pub fn encode(&self) -> Vec<u8> {
         let mut rrs = Vec::new();
         for rr in &self.resource_records {
-            let mut encoded_rr =  rr.encode();
+            let mut encoded_rr = rr.encode();
             rrs.append(&mut encoded_rr);
         }
         rrs
@@ -62,10 +62,22 @@ impl ResourceRecord {
         result.append(&mut type_and_class);
 
         // ttl
-        result.push(((self.ttl & 0b_1111_1111_0000_0000_0000_0000_0000_0000) >> 24) as u8);
-        result.push(((self.ttl & 0b_0000_0000_1111_1111_0000_0000_0000_0000) >> 16) as u8);
-        result.push(((self.ttl & 0b_0000_0000_0000_0000_1111_1111_0000_0000) >> 08) as u8);
-        result.push(((self.ttl & 0b_0000_0000_0000_0000_0000_0000_1111_1111) >> 00) as u8);
+        result.push(
+            ((self.ttl & 0b_1111_1111_0000_0000_0000_0000_0000_0000) >> 24)
+                as u8,
+        );
+        result.push(
+            ((self.ttl & 0b_0000_0000_1111_1111_0000_0000_0000_0000) >> 16)
+                as u8,
+        );
+        result.push(
+            ((self.ttl & 0b_0000_0000_0000_0000_1111_1111_0000_0000) >> 08)
+                as u8,
+        );
+        result.push(
+            ((self.ttl & 0b_0000_0000_0000_0000_0000_0000_1111_1111) >> 00)
+                as u8,
+        );
 
         // rd_data
         result.push(((self.rd_length & 0b_1111_1111_0000_0000) >> 8) as u8);
@@ -88,7 +100,8 @@ impl ResourceRecord {
         pos += parsed_count as usize;
         result.q_name = domain_name;
 
-        let (q_type, q_class, parsed_count) = dns_types::parse_type_and_class(msg, pos);
+        let (q_type, q_class, parsed_count) =
+            dns_types::parse_type_and_class(msg, pos);
         pos += parsed_count as usize;
         result.q_type = q_type;
         result.q_class = q_class;
@@ -114,8 +127,9 @@ impl ResourceRecord {
             pos += 1;
         }
 
-        let total_parsed_count: u16= (pos - offset).try_into().
-            expect("can not happen ever as msg length is controlled");
+        let total_parsed_count: u16 = (pos - offset)
+            .try_into()
+            .expect("can not happen ever as msg length is controlled");
 
         (result, total_parsed_count)
     }

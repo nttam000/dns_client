@@ -1,7 +1,7 @@
-use super::dns_types::{RCode};
+use super::dns_types::RCode;
 
 pub struct Header {
-    id: u16, //random generate, used to match query and response
+    id: u16, // todo: random generate, used to match query and response
     header_flags: HeaderFlags,
     qd_count: u16,
     an_count: u16,
@@ -19,7 +19,7 @@ pub struct HeaderFlags {
     z: bool,
     ad: bool,
     cd: bool,
-    r_code: RCode
+    r_code: RCode,
 }
 
 impl Header {
@@ -36,7 +36,7 @@ impl Header {
 
     pub fn encode(&self) -> Vec<u8> {
         // dns header has the length of 12 octets
-        let mut result: Vec<u8> = vec!(0; 12);
+        let mut result: Vec<u8> = vec![0; 12];
 
         result[0] = (self.id >> 8) as u8;
         result[1] = (self.id >> 0) as u8;
@@ -66,19 +66,32 @@ impl Header {
     pub fn parse(message: &[u8], start_pos: usize) -> (Self, u16) {
         assert!(message.len() > 12);
         let header = Self {
-            id: (message[start_pos] as u16) << 8 | (message[start_pos + 1] as u16),
-            header_flags: HeaderFlags::parse(&message[start_pos+2..start_pos+4]),
-            qd_count: (message[start_pos+4] as u16) << 8 | (message[start_pos+5] as u16),
-            an_count: (message[start_pos+6] as u16) << 8 | (message[start_pos+7] as u16),
-            ns_count: (message[start_pos+8] as u16) << 8 | (message[start_pos+9] as u16),
-            ar_count: (message[start_pos+10] as u16) << 8 | (message[start_pos+11] as u16),
+            id: (message[start_pos] as u16) << 8
+                | (message[start_pos + 1] as u16),
+            header_flags: HeaderFlags::parse(
+                &message[start_pos + 2..start_pos + 4],
+            ),
+            qd_count: (message[start_pos + 4] as u16) << 8
+                | (message[start_pos + 5] as u16),
+            an_count: (message[start_pos + 6] as u16) << 8
+                | (message[start_pos + 7] as u16),
+            ns_count: (message[start_pos + 8] as u16) << 8
+                | (message[start_pos + 9] as u16),
+            ar_count: (message[start_pos + 10] as u16) << 8
+                | (message[start_pos + 11] as u16),
         };
         (header, 12)
     }
 
-    pub fn get_an_count(&self) -> u16 { self.an_count }
-    pub fn get_ns_count(&self) -> u16 { self.ns_count }
-    pub fn get_ar_count(&self) -> u16 { self.ar_count }
+    pub fn get_an_count(&self) -> u16 {
+        self.an_count
+    }
+    pub fn get_ns_count(&self) -> u16 {
+        self.ns_count
+    }
+    pub fn get_ar_count(&self) -> u16 {
+        self.ar_count
+    }
 }
 
 impl HeaderFlags {
@@ -93,7 +106,7 @@ impl HeaderFlags {
             z: false,
             ad: false,
             cd: false,
-            r_code: RCode::NoError
+            r_code: RCode::NoError,
         }
     }
 
@@ -102,22 +115,40 @@ impl HeaderFlags {
         // let mut result: Vec<u8> = Vec::from([0b0000_0000, 0b0000_0000]);
         let mut result: Vec<u8> = Vec::from([0, 0]);
 
-        if self.qr { result[0] |= 1 << 7 };
+        if self.qr {
+            result[0] |= 1 << 7
+        };
 
         assert!(self.op_code < 16);
         result[0] |= self.op_code << 3;
 
-        if self.aa { result[0] |= 1 << 2 };
-        if self.tc { result[0] |= 1 << 1 };
-        if self.rd { result[0] |= 1 << 0 };
+        if self.aa {
+            result[0] |= 1 << 2
+        };
+        if self.tc {
+            result[0] |= 1 << 1
+        };
+        if self.rd {
+            result[0] |= 1 << 0
+        };
 
         // second octet
-        if self.ra { result[1] |= 1 << 7 };
-        if self.z  { result[1] |= 1 << 6 };
-        if self.ad { result[1] |= 1 << 5 };
-        if self.cd { result[1] |= 1 << 4 };
+        if self.ra {
+            result[1] |= 1 << 7
+        };
+        if self.z {
+            result[1] |= 1 << 6
+        };
+        if self.ad {
+            result[1] |= 1 << 5
+        };
+        if self.cd {
+            result[1] |= 1 << 4
+        };
 
-        let r_code_value = self.r_code.get_value()
+        let r_code_value = self
+            .r_code
+            .get_value()
             .expect("never see FutureUse in encoding state");
 
         assert!(r_code_value < 16);
@@ -136,10 +167,10 @@ impl HeaderFlags {
             tc: false,
             rd: true, //todo: default?
             ra: false,
-            z : false,
+            z: false,
             ad: false,
             cd: false,
-            r_code: RCode::NoError
+            r_code: RCode::NoError,
         };
 
         result.qr = (message[0] & 0b1000_0000) >> 7 == 1;
@@ -150,7 +181,7 @@ impl HeaderFlags {
 
         // second octet
         result.ra = (message[1] & 0b1000_0000) >> 7 == 1;
-        result.z  = (message[1] & 0b0100_0000) >> 6 == 1;
+        result.z = (message[1] & 0b0100_0000) >> 6 == 1;
         result.ad = (message[1] & 0b0010_0000) >> 5 == 1;
         result.cd = (message[1] & 0b0001_0000) >> 4 == 1;
         result.r_code = RCode::get_r_code((message[1] & 0b0000_1111) >> 0);
@@ -168,8 +199,16 @@ mod tests {
     fn header_flags_encode() {
         // case0, all OFF
         let header_flags = HeaderFlags {
-            qr: false, op_code: 0, aa: false, tc: false, rd: false,
-            ra: false,  z: false,  ad: false, cd: false, r_code: RCode::NoError
+            qr: false,
+            op_code: 0,
+            aa: false,
+            tc: false,
+            rd: false,
+            ra: false,
+            z: false,
+            ad: false,
+            cd: false,
+            r_code: RCode::NoError,
         };
 
         let encoded_header_flags = header_flags.encode();
@@ -179,8 +218,16 @@ mod tests {
         // case1, all ON
         // except RCode::NotZone (10, 0b1010), not implemented yet for RCODE=15
         let header_flags = HeaderFlags {
-            qr: true, op_code: 0b1111, aa: true, tc: true, rd: true,
-            ra: true,  z: true,  ad: true, cd: true, r_code: RCode::NotZone
+            qr: true,
+            op_code: 0b1111,
+            aa: true,
+            tc: true,
+            rd: true,
+            ra: true,
+            z: true,
+            ad: true,
+            cd: true,
+            r_code: RCode::NotZone,
         };
 
         let encoded_header_flags = header_flags.encode();
@@ -199,7 +246,7 @@ mod tests {
         assert!(header_flags.tc == false);
         assert!(header_flags.rd == false);
         assert!(header_flags.ra == false);
-        assert!(header_flags.z  == false);
+        assert!(header_flags.z == false);
         assert!(header_flags.ad == false);
         assert!(header_flags.cd == false);
         assert!(header_flags.r_code == RCode::NoError);

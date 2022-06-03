@@ -1,0 +1,10 @@
+# example configuration
+udp_buffer_size=512
+
+protocol="udp"
+tcp_fallback=true
+
+edns_enable=false #RFC6891
+
+local_interface="192.168.1.100:0"
+default_servers=["8.8.8.8:53","8.8.4.4:53"]

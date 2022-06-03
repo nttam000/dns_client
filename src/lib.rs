@@ -1,6 +1,7 @@
-mod parser;
-mod net;
+pub mod config;
 mod core;
+mod net;
+mod parser;
 
 use crate::core::core::Core;
 
@@ -15,7 +16,7 @@ pub struct DnsError {
 impl DnsResult {
     pub fn new(answers: Vec<Vec<u8>>) -> Self {
         Self {
-            answers: answers.clone()
+            answers: answers.clone(),
         }
     }
 
@@ -26,9 +27,7 @@ impl DnsResult {
 
 impl DnsError {
     pub fn new(error_code: u8) -> Self {
-        Self {
-            error_code
-        }
+        Self { error_code }
     }
 
     pub fn get_error_code(&self) -> u8 {
@@ -41,7 +40,10 @@ pub fn query(domain: &str) -> Result<DnsResult, DnsError> {
     core.send_query(domain)
 }
 
-pub fn query_with_server(domain: &str, server_ip: &str) -> Result<DnsResult, DnsError> {
+pub fn query_with_server(
+    domain: &str,
+    server_ip: &str,
+) -> Result<DnsResult, DnsError> {
     let core = Core::new();
     core.send_query_with_server(domain, &server_ip)
 }

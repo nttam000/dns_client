@@ -1,36 +1,46 @@
-use std::net::{SocketAddr, IpAddr, Ipv4Addr};
-use crate::{DnsResult, DnsError};
+use crate::config::config_handler::CONFIG;
 use crate::net::udp_controller::UdpController;
 use crate::parser::message::Message;
+use crate::{DnsError, DnsResult};
+use std::net::SocketAddr;
 
 pub struct Core {
     udp_controller: UdpController,
+    default_servers: Vec<SocketAddr>,
 }
 
 impl Core {
-    const DEFAULT_UDP_BUFFER: usize = 1024;
-
-    // todo: what address should be used here
-    const DEFAULT_INTERFACE_IP: IpAddr = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 100));
-
     pub fn new() -> Self {
-        let interface = SocketAddr::new(
-            Self::DEFAULT_INTERFACE_IP,
-            0
-        );
+        let local_interface =
+            Self::get_server_ip_from_string(&CONFIG.local_interface);
+
+        let mut default_servers: Vec<SocketAddr> = Vec::new();
+        for server in &CONFIG.default_servers {
+            default_servers.push(Self::get_server_ip_from_string(server));
+        }
+
+        let udp_controller =
+            UdpController::new(CONFIG.udp_buffer_size, local_interface);
 
         Self {
-            udp_controller: UdpController::new(
-                Self::DEFAULT_UDP_BUFFER, interface)
+            udp_controller,
+            default_servers,
         }
     }
 
     pub fn send_query(&self, domain: &str) -> Result<DnsResult, DnsError> {
-        self.send_query_to_network_layer(&domain, &Self::get_default_server())
+        let default_server = &self.get_default_server();
+        match default_server {
+            Some(server) => self.send_query_to_network_layer(&domain, server),
+            None => panic!(),
+        }
     }
 
-    pub fn send_query_with_server(&self, domain: &str, server: &str)
-    -> Result<DnsResult, DnsError> {
+    pub fn send_query_with_server(
+        &self,
+        domain: &str,
+        server: &str,
+    ) -> Result<DnsResult, DnsError> {
         let server_ip = Self::get_server_ip_from_string(&server);
         self.send_query_to_network_layer(&domain, &server_ip)
     }
@@ -38,22 +48,30 @@ impl Core {
     fn get_server_ip_from_string(server: &str) -> SocketAddr {
         match server.parse() {
             Ok(socket) => socket,
-            Err(_) => panic!()
+            Err(_) => panic!(),
         }
     }
 
-    fn get_default_server() -> SocketAddr {
-        Self::get_server_ip_from_string("8.8.8.8:53")
+    // todo: don't hard code like that (0)
+    fn get_default_server(&self) -> Option<SocketAddr> {
+        if self.default_servers.len() == 0 {
+            return None;
+        }
+        Some(self.default_servers[0])
     }
 
-    fn send_query_to_network_layer(&self, domain: &str, server: &SocketAddr)
-    -> Result<DnsResult, DnsError> {
+    fn send_query_to_network_layer(
+        &self,
+        domain: &str,
+        server: &SocketAddr,
+    ) -> Result<DnsResult, DnsError> {
         let msg = Message::new(domain);
 
         let encoded_msg = msg.encode();
 
-        let encoded_response =
-            self.udp_controller.send_query_to_server(&encoded_msg, &server);
+        let encoded_response = self
+            .udp_controller
+            .send_query_to_server(&encoded_msg, &server);
 
         match encoded_response {
             Some(response) => {
@@ -66,7 +84,7 @@ impl Core {
                 }
                 Ok(DnsResult::new(result)) //give up ownership of result
             }
-            None => Err(DnsError::new(0))
+            None => Err(DnsError::new(0)),
         }
     }
 }
