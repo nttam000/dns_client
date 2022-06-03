@@ -1,7 +1,7 @@
 use super::dns_types::{RCode};
 
 pub struct Header {
-    id: u16, //random generate, used to match query and response
+    id: u16, // todo: random generate, used to match query and response
     header_flags: HeaderFlags,
     qd_count: u16,
     an_count: u16,

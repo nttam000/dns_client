@@ -73,6 +73,4 @@ impl QuestionEntry {
             parsed_count
         )
     }
-
-
 }

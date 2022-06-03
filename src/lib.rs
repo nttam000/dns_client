@@ -46,36 +46,3 @@ pub fn query_with_server(domain: &str, server_ip: &str) -> Result<DnsResult, Dns
     let core = Core::new();
     core.send_query_with_server(domain, &server_ip)
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn query() {
-        let query_result = crate::query("quora.com");
-        // let query_result = dns_client::query_with_server("quora.com", "8.8.4.4:53");
-
-        match query_result {
-            Ok(value) => {
-                for ip in value.get_answers() {
-                    for (id, byte) in ip.iter().enumerate() {
-                        print!("{}", byte);
-
-                        if id < ip.len() - 1 {
-                            print!(".");
-                        }
-                    }
-                    println!();
-                }
-            }
-            Err(error) => {
-                println!("{}", error.get_error_code());
-            }
-        }
-    }
-
-    #[test]
-    fn init() {
-        use crate::config::config_handler::CONFIG;
-        println!("{}", CONFIG.udp_buffer_size);
-    }
-}

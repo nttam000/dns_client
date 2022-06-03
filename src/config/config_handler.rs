@@ -1,6 +1,4 @@
 use toml::Value;
-use toml::Value::Array;
-use std::env;
 use std::fs;
 use lazy_static::lazy_static;
 
@@ -75,7 +73,20 @@ pub fn load_config() -> Config {
         default_servers
     };
 
-    println!("{:?}", result);
-
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::CONFIG;
+
+    #[test]
+    fn test_config() {
+        assert!(CONFIG.udp_buffer_size >= 512);
+        assert!(CONFIG.protocol == "udp" || CONFIG.protocol == "tcp");
+        assert!(CONFIG.tcp_fallback || !CONFIG.tcp_fallback);
+        assert!(CONFIG.edns_enable || !CONFIG.edns_enable);
+        assert!(CONFIG.local_interface.len() > 0); // String
+        assert!(CONFIG.default_servers.len() > 0); //Vec
+    }
 }

@@ -1,4 +1,4 @@
-use std::net::{SocketAddr, IpAddr, Ipv4Addr};
+use std::net::SocketAddr;
 use crate::{DnsResult, DnsError};
 use crate::net::udp_controller::UdpController;
 use crate::parser::message::Message;
@@ -29,7 +29,7 @@ impl Core {
     }
 
     pub fn send_query(&self, domain: &str) -> Result<DnsResult, DnsError> {
-        let default_server = &Self::get_default_server();
+        let default_server = &self.get_default_server();
         match default_server {
             Some(server) => self.send_query_to_network_layer(&domain, server),
             None => panic!()
@@ -49,11 +49,12 @@ impl Core {
         }
     }
 
-    fn get_default_server() -> Option<SocketAddr> {
-        if CONFIG.default_servers.len() == 0 {
+    // todo: don't hard code like that (0)
+    fn get_default_server(&self) -> Option<SocketAddr> {
+        if self.default_servers.len() == 0 {
             return None;
         }
-        Some(Self::get_server_ip_from_string(&CONFIG.default_servers[0]))
+        Some(self.default_servers[0])
     }
 
     fn send_query_to_network_layer(&self, domain: &str, server: &SocketAddr)
