@@ -3,7 +3,7 @@ pub enum DomainName {
     LabelToDomainName(u16),
 }
 
-const LENGTH_OF_LABEL_DOMAIN:u16 = 2;
+const LENGTH_OF_LABEL_DOMAIN: u16 = 2;
 
 impl DomainName {
     pub fn new(domain_name: &str) -> Self {
@@ -15,7 +15,7 @@ impl DomainName {
         match &self {
             Self::LiteralDomainName(domain_name) => {
                 Self::encode_literal_domain(&domain_name)
-            },
+            }
             Self::LabelToDomainName(position) => {
                 Self::encode_pointer_domain(*position)
             }
@@ -42,8 +42,10 @@ impl DomainName {
                 dot_points[(i + 1) as usize] - dot_points[i as usize] - 1;
         }
 
-        q_name_as_bytes[dot_points[dot_points.len() - 1 as usize] as usize]
-            = q_name_as_bytes.len() as u8- dot_points[dot_points.len() - 1 as usize] as u8 - 1;
+        q_name_as_bytes[dot_points[dot_points.len() - 1 as usize] as usize] =
+            q_name_as_bytes.len() as u8
+                - dot_points[dot_points.len() - 1 as usize] as u8
+                - 1;
 
         // null termination
         q_name_as_bytes.push(0);
@@ -52,7 +54,7 @@ impl DomainName {
 
     // todo: add a helper to encode u16, u32 to Vec<u8>
     fn encode_pointer_domain(position: u16) -> Vec<u8> {
-        let mut result: Vec<u8> = vec!(0; 2);
+        let mut result: Vec<u8> = vec![0; 2];
         result[0] = 0b1100_0000;
         result[0] |= (position >> 8) as u8;
         result[1] |= (position >> 0) as u8;
@@ -80,7 +82,8 @@ impl DomainName {
 
     // todo: does not work when there's no dot in domain name
     fn parse_literal_domain_name(msg: &[u8], offset: usize) -> (Self, u16) {
-        let (mut question, parsed_count) = Self::extract_domain_name_field(msg, offset);
+        let (mut question, parsed_count) =
+            Self::extract_domain_name_field(msg, offset);
 
         let mut pos = 0;
         loop {
@@ -98,10 +101,7 @@ impl DomainName {
         let domain_name_str = String::from_utf8(question).expect("trust me :D");
         let domain_name = Self::new(&domain_name_str);
 
-        (
-            domain_name,
-            parsed_count
-        )
+        (domain_name, parsed_count)
     }
 
     fn extract_domain_name_field(msg: &[u8], offset: usize) -> (Vec<u8>, u16) {
@@ -121,8 +121,9 @@ impl DomainName {
         let mut question = Vec::new();
         question.extend_from_slice(&msg[offset..probe]);
 
-        let parsed_count: u16= (probe - offset).try_into().
-            expect("can not happen ever as msg length is controlled");
+        let parsed_count: u16 = (probe - offset)
+            .try_into()
+            .expect("can not happen ever as msg length is controlled");
 
         (question, parsed_count)
     }

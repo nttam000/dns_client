@@ -1,17 +1,17 @@
-use super::dns_types::{ QType, QClass };
 use super::dns_types;
+use super::dns_types::{QClass, QType};
 use super::domain_name::DomainName;
 
 pub struct Question {
     // todo: technically, you can query more than 1 domain at a time
     // but for now, just 1 is allows
-    entry: QuestionEntry
+    entry: QuestionEntry,
 }
 
 impl Question {
     pub fn new(domain_name: &str) -> Self {
         Self {
-            entry: QuestionEntry::new(&domain_name)
+            entry: QuestionEntry::new(&domain_name),
         }
     }
 
@@ -21,7 +21,7 @@ impl Question {
 
     pub fn parse(msg: &[u8], pos: usize) -> (Self, u16) {
         let (entry, parsed_count) = QuestionEntry::parse(msg, pos);
-        let question = Self {entry};
+        let question = Self { entry };
         (question, parsed_count)
     }
 }
@@ -34,7 +34,6 @@ struct QuestionEntry {
 
 impl QuestionEntry {
     fn new(domain_name: &str) -> Self {
-
         assert!(domain_name.len() < 256);
 
         Self {
@@ -65,12 +64,17 @@ impl QuestionEntry {
             dns_types::parse_type_and_class(msg, pos_mut);
         pos_mut += parsed_count as usize;
 
-        let parsed_count: u16= (pos_mut - pos).try_into().
-            expect("can not happen ever as msg length is controlled");
+        let parsed_count: u16 = (pos_mut - pos)
+            .try_into()
+            .expect("can not happen ever as msg length is controlled");
 
         (
-            Self { q_name, q_type, q_class },
-            parsed_count
+            Self {
+                q_name,
+                q_type,
+                q_class,
+            },
+            parsed_count,
         )
     }
 }

@@ -1,6 +1,6 @@
-use toml::Value;
-use std::fs;
 use lazy_static::lazy_static;
+use std::fs;
+use toml::Value;
 
 const CONFIG_FILE_PATH: &str = "config.toml";
 
@@ -11,7 +11,7 @@ pub struct Config {
     pub tcp_fallback: bool,
     pub edns_enable: bool,
     pub local_interface: String,
-    pub default_servers: Vec<String>
+    pub default_servers: Vec<String>,
 }
 
 lazy_static! {
@@ -27,27 +27,37 @@ pub fn load_config() -> Config {
 
     let udp_buffer_size = match toml_value["udp_buffer_size"] {
         Value::Integer(value) => value,
-        _ => { panic!("") }
+        _ => {
+            panic!("")
+        }
     };
 
     let protocol = match &toml_value["protocol"] {
         Value::String(value) => value.clone(),
-        _ => { panic!("") }
+        _ => {
+            panic!("")
+        }
     };
 
     let tcp_fallback = match toml_value["tcp_fallback"] {
         Value::Boolean(value) => value,
-        _ => { panic!("") }
+        _ => {
+            panic!("")
+        }
     };
 
     let edns_enable = match toml_value["edns_enable"] {
         Value::Boolean(value) => value,
-        _ => { panic!("") }
+        _ => {
+            panic!("")
+        }
     };
 
     let local_interface = match &toml_value["local_interface"] {
         Value::String(value) => value.clone(),
-        _ => { panic!("") }
+        _ => {
+            panic!("")
+        }
     };
 
     let default_servers = match &toml_value["default_servers"] {
@@ -59,8 +69,10 @@ pub fn load_config() -> Config {
                 }
             }
             ips
-        },
-        _ => { panic!("") }
+        }
+        _ => {
+            panic!("")
+        }
     };
 
     assert!(udp_buffer_size >= 512);
@@ -70,7 +82,7 @@ pub fn load_config() -> Config {
         tcp_fallback,
         edns_enable,
         local_interface,
-        default_servers
+        default_servers,
     };
 
     result

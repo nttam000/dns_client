@@ -5,9 +5,7 @@ fn query() {
     let query_result = dns_client::query("google.com");
 
     let answers = match query_result {
-        Ok(value) => {
-            value.get_answers().clone()
-        }
+        Ok(value) => value.get_answers().clone(),
         Err(error) => {
             panic!("failed, error_code: {}", error.get_error_code())
         }
@@ -17,12 +15,11 @@ fn query() {
 
 #[test]
 fn query_with_server() {
-    let query_result = dns_client::query_with_server("google.com", "8.8.4.4:53");
+    let query_result =
+        dns_client::query_with_server("google.com", "8.8.4.4:53");
 
     let answers = match query_result {
-        Ok(value) => {
-            value.get_answers().clone()
-        }
+        Ok(value) => value.get_answers().clone(),
         Err(error) => {
             panic!("failed, error_code: {}", error.get_error_code())
         }

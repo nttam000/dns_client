@@ -1,12 +1,12 @@
-use std::net::SocketAddr;
-use crate::{DnsResult, DnsError};
+use crate::config::config_handler::CONFIG;
 use crate::net::udp_controller::UdpController;
 use crate::parser::message::Message;
-use crate::config::config_handler::CONFIG;
+use crate::{DnsError, DnsResult};
+use std::net::SocketAddr;
 
 pub struct Core {
     udp_controller: UdpController,
-    default_servers: Vec<SocketAddr>
+    default_servers: Vec<SocketAddr>,
 }
 
 impl Core {
@@ -24,7 +24,7 @@ impl Core {
 
         Self {
             udp_controller,
-            default_servers
+            default_servers,
         }
     }
 
@@ -32,12 +32,15 @@ impl Core {
         let default_server = &self.get_default_server();
         match default_server {
             Some(server) => self.send_query_to_network_layer(&domain, server),
-            None => panic!()
+            None => panic!(),
         }
     }
 
-    pub fn send_query_with_server(&self, domain: &str, server: &str)
-    -> Result<DnsResult, DnsError> {
+    pub fn send_query_with_server(
+        &self,
+        domain: &str,
+        server: &str,
+    ) -> Result<DnsResult, DnsError> {
         let server_ip = Self::get_server_ip_from_string(&server);
         self.send_query_to_network_layer(&domain, &server_ip)
     }
@@ -45,7 +48,7 @@ impl Core {
     fn get_server_ip_from_string(server: &str) -> SocketAddr {
         match server.parse() {
             Ok(socket) => socket,
-            Err(_) => panic!()
+            Err(_) => panic!(),
         }
     }
 
@@ -57,14 +60,18 @@ impl Core {
         Some(self.default_servers[0])
     }
 
-    fn send_query_to_network_layer(&self, domain: &str, server: &SocketAddr)
-    -> Result<DnsResult, DnsError> {
+    fn send_query_to_network_layer(
+        &self,
+        domain: &str,
+        server: &SocketAddr,
+    ) -> Result<DnsResult, DnsError> {
         let msg = Message::new(domain);
 
         let encoded_msg = msg.encode();
 
-        let encoded_response =
-            self.udp_controller.send_query_to_server(&encoded_msg, &server);
+        let encoded_response = self
+            .udp_controller
+            .send_query_to_server(&encoded_msg, &server);
 
         match encoded_response {
             Some(response) => {
@@ -77,7 +84,7 @@ impl Core {
                 }
                 Ok(DnsResult::new(result)) //give up ownership of result
             }
-            None => Err(DnsError::new(0))
+            None => Err(DnsError::new(0)),
         }
     }
 }
