@@ -1,9 +1,9 @@
 // Please refer RFC1035, section 4. MESSAGES and RFC6895
-// todo: Request and Response should share a same trait, really?
-
+// todo: Request and Response should share a same trait? UPDATE: really?
 use super::header::Header;
 use super::question::Question;
 use super::record::*;
+use crate::config::config_handler::CONFIG;
 
 pub struct Message {
     header: Header,
@@ -22,19 +22,26 @@ impl Message {
             authorities: Records::new(),
             additionals: Records::new(),
         };
+
         msg.header.inc_qd_count();
+        msg.header.enable_recursion();
         msg
     }
 
-    pub fn new_edns(domain_name: &str) -> Self {
-        let mut msg = Self::new(domain_name);
-        let opt_rr = OptRecord::new(1280);
-        msg.add_additional_records(opt_rr.record);
-        msg
+    pub fn convert_to_edns_query(&mut self) {
+        let opt_rr = OptRecord::new(CONFIG.edns_buffer_size as u16);
+        self.add_additional_records(opt_rr.record);
+    }
+
+    pub fn add_2_bytes_length_for_tcp(msg: &mut Vec<u8>) {
+        let len = msg.len();
+        msg.insert(0, ((len >> 0) & 0b0000_0000_1111_1111) as u8);
+        msg.insert(0, ((len >> 8) & 0b0000_0000_1111_1111) as u8);
     }
 
     pub fn encode(&self) -> Vec<u8> {
         let mut result = Vec::new();
+
         let mut encoded_header = self.header.encode();
         let mut encoded_questions = self.question.encode();
         let mut encoded_answers = self.answers.encode();
@@ -100,5 +107,13 @@ impl Message {
     pub fn add_additional_records(&mut self, record: Record) {
         self.additionals.push(record);
         self.header.inc_ar_count();
+    }
+
+    // quick check if tc bit is ON, no need to parse
+    // todo: not tested
+    pub fn is_truncated(raw_msg: &Vec<u8>) -> bool {
+        // RFC1035, 4.1.1. Header section format
+        let is_truncated = raw_msg[3] & 0b00000010;
+        is_truncated == 1
     }
 }

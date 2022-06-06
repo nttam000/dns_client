@@ -1,10 +1,13 @@
 # example configuration
 udp_buffer_size=512
+tcp_buffer_size=1024
 
 protocol="udp"
 tcp_fallback=true
 
-edns_enable=false #RFC6891
+#EDNS, RFC6891
+edns_enable=false
+edns_buffer_size=1280
 
-local_interface="192.168.1.100:0"
+local_interface="0.0.0.0:0" # leave it to the os
 default_servers=["8.8.8.8:53","8.8.4.4:53"]

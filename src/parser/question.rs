@@ -3,8 +3,8 @@ use super::dns_types::{QClass, QType};
 use super::domain_name::DomainName;
 
 pub struct Question {
-    // todo: technically, you can query more than 1 domain at a time
-    // but for now, just 1 is allows
+    // more than one domain can exist at a same time,
+    // but for simplicity, only one is allowed.
     entry: QuestionEntry,
 }
 
@@ -45,8 +45,7 @@ impl QuestionEntry {
 
     fn encode(&self) -> Vec<u8> {
         let mut result = self.q_name.encode();
-        let mut type_and_class =
-            dns_types::encode_type_and_class(self.q_type, self.q_class);
+        let mut type_and_class = dns_types::encode_type_and_class(self.q_type, self.q_class);
 
         result.append(&mut type_and_class);
         result
@@ -60,8 +59,7 @@ impl QuestionEntry {
         let (q_name, parsed_count) = DomainName::parse(msg, pos_mut);
         pos_mut += parsed_count as usize;
 
-        let (q_type, q_class, parsed_count) =
-            dns_types::parse_type_and_class(msg, pos_mut);
+        let (q_type, q_class, parsed_count) = dns_types::parse_type_and_class(msg, pos_mut);
         pos_mut += parsed_count as usize;
 
         let parsed_count: u16 = (pos_mut - pos)

@@ -5,15 +5,21 @@ mod parser;
 
 use crate::core::core::Core;
 
-pub struct DnsResult {
+#[derive(PartialEq)]
+pub enum Protocol {
+    Udp,
+    Tcp,
+}
+
+pub struct Answer {
     answers: Vec<Vec<u8>>,
 }
 
-pub struct DnsError {
+pub struct Error {
     error_code: u8,
 }
 
-impl DnsResult {
+impl Answer {
     pub fn new(answers: Vec<Vec<u8>>) -> Self {
         Self {
             answers: answers.clone(),
@@ -25,7 +31,7 @@ impl DnsResult {
     }
 }
 
-impl DnsError {
+impl Error {
     pub fn new(error_code: u8) -> Self {
         Self { error_code }
     }
@@ -35,15 +41,18 @@ impl DnsError {
     }
 }
 
-pub fn query(domain: &str) -> Result<DnsResult, DnsError> {
+pub fn query(domain: &str) -> Result<Answer, Error> {
     let core = Core::new();
-    core.send_query(domain)
+    core.query(domain)
 }
 
-pub fn query_with_server(
+pub fn query_with_options(
     domain: &str,
     server_ip: &str,
-) -> Result<DnsResult, DnsError> {
+    edns_enable: bool,
+    protocol: Protocol,
+    tcp_fallback: bool,
+) -> Result<Answer, Error> {
     let core = Core::new();
-    core.send_query_with_server(domain, &server_ip)
+    core.query_with_options(domain, &server_ip, edns_enable, protocol, tcp_fallback)
 }

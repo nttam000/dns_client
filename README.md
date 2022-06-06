@@ -23,3 +23,4 @@ customized resouce record like OPT for EDNS
 ## Done
 * read configuration from file (or something else), rather than hardcode
 * setting DNS servers
+* Async network

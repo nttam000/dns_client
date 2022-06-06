@@ -16,16 +16,16 @@ impl UdpController {
         }
     }
 
-    pub fn send_query_to_server(
-        &self,
-        encoded_msg: &Vec<u8>,
-        server: &SocketAddr,
-    ) -> Option<Vec<u8>> {
+    pub fn query(&self, encoded_msg: &Vec<u8>, server: &SocketAddr) -> Option<Vec<u8>> {
         let socket = self.create_socket();
 
         socket.connect(&server).expect("connect function failed");
         socket.send(&encoded_msg).expect("could not send to server");
 
+        self.wait_for_response(&socket)
+    }
+
+    fn wait_for_response(&self, socket: &UdpSocket) -> Option<Vec<u8>> {
         let mut buffer: Vec<u8> = vec![0; self.buffer_size];
 
         match socket.recv(&mut buffer) {

@@ -13,12 +13,8 @@ impl DomainName {
 
     pub fn encode(&self) -> Vec<u8> {
         match &self {
-            Self::LiteralDomainName(domain_name) => {
-                Self::encode_literal_domain(&domain_name)
-            }
-            Self::LabelToDomainName(position) => {
-                Self::encode_pointer_domain(*position)
-            }
+            Self::LiteralDomainName(domain_name) => Self::encode_literal_domain(&domain_name),
+            Self::LabelToDomainName(position) => Self::encode_pointer_domain(*position),
         }
     }
 
@@ -48,9 +44,7 @@ impl DomainName {
         }
 
         q_name_as_bytes[dot_points[dot_points.len() - 1 as usize] as usize] =
-            q_name_as_bytes.len() as u8
-                - dot_points[dot_points.len() - 1 as usize] as u8
-                - 1;
+            q_name_as_bytes.len() as u8 - dot_points[dot_points.len() - 1 as usize] as u8 - 1;
 
         // null termination
         q_name_as_bytes.push(0);
@@ -87,10 +81,9 @@ impl DomainName {
 
     // todo: does not work when there's no dot in domain name
     fn parse_literal_domain_name(msg: &[u8], offset: usize) -> (Self, u16) {
-        let (mut question, parsed_count) =
-            Self::extract_domain_name_field(msg, offset);
+        let (mut question, parsed_count) = Self::extract_domain_name_field(msg, offset);
 
-        // todo: workaround
+        // todo: quick fix
         if parsed_count == 1 {
             let domain_name = Self::new("\0");
             return (domain_name, 1);

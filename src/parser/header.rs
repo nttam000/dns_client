@@ -65,22 +65,15 @@ impl Header {
 
     // input as slice, len = 12 octets
     // todo: test
-    pub fn parse(message: &[u8], start_pos: usize) -> (Self, u16) {
-        assert!(message.len() > 12);
+    pub fn parse(msg: &[u8], start_pos: usize) -> (Self, u16) {
+        assert!(msg.len() > 12);
         let header = Self {
-            id: (message[start_pos] as u16) << 8
-                | (message[start_pos + 1] as u16),
-            header_flags: HeaderFlags::parse(
-                &message[start_pos + 2..start_pos + 4],
-            ),
-            qd_count: (message[start_pos + 4] as u16) << 8
-                | (message[start_pos + 5] as u16),
-            an_count: (message[start_pos + 6] as u16) << 8
-                | (message[start_pos + 7] as u16),
-            ns_count: (message[start_pos + 8] as u16) << 8
-                | (message[start_pos + 9] as u16),
-            ar_count: (message[start_pos + 10] as u16) << 8
-                | (message[start_pos + 11] as u16),
+            id: (msg[start_pos] as u16) << 8 | (msg[start_pos + 1] as u16),
+            header_flags: HeaderFlags::parse(&msg[start_pos + 2..start_pos + 4]),
+            qd_count: (msg[start_pos + 4] as u16) << 8 | (msg[start_pos + 5] as u16),
+            an_count: (msg[start_pos + 6] as u16) << 8 | (msg[start_pos + 7] as u16),
+            ns_count: (msg[start_pos + 8] as u16) << 8 | (msg[start_pos + 9] as u16),
+            ar_count: (msg[start_pos + 10] as u16) << 8 | (msg[start_pos + 11] as u16),
         };
         (header, 12)
     }
@@ -103,6 +96,10 @@ impl Header {
         self.ar_count += 1;
     }
 
+    pub fn enable_recursion(&mut self) {
+        self.header_flags.enable_recursion();
+    }
+
     fn generate_random_id() -> u16 {
         rand::thread_rng().gen_range(1..=65535)
     }
@@ -115,7 +112,7 @@ impl HeaderFlags {
             op_code: 0,
             aa: false,
             tc: false,
-            rd: true, //todo:
+            rd: false,
             ra: false,
             z: false,
             ad: false,
@@ -172,13 +169,13 @@ impl HeaderFlags {
 
     // input as slice, len = 2 octets
     // todo: test
-    pub fn parse(message: &[u8]) -> Self {
+    pub fn parse(msg: &[u8]) -> Self {
         let mut result = Self {
             qr: false,
             op_code: 0,
             aa: false,
             tc: false,
-            rd: true, //todo: default?
+            rd: false,
             ra: false,
             z: false,
             ad: false,
@@ -186,20 +183,24 @@ impl HeaderFlags {
             r_code: RCode::NoError,
         };
 
-        result.qr = (message[0] & 0b1000_0000) >> 7 == 1;
-        result.op_code = (message[0] & 0b0111_1000) >> 3;
-        result.aa = (message[0] & 0b0000_0100) >> 2 == 1;
-        result.tc = (message[0] & 0b0000_0010) >> 1 == 1;
-        result.rd = (message[0] & 0b0000_0001) >> 0 == 1;
+        result.qr = (msg[0] & 0b1000_0000) >> 7 == 1;
+        result.op_code = (msg[0] & 0b0111_1000) >> 3;
+        result.aa = (msg[0] & 0b0000_0100) >> 2 == 1;
+        result.tc = (msg[0] & 0b0000_0010) >> 1 == 1;
+        result.rd = (msg[0] & 0b0000_0001) >> 0 == 1;
 
         // second octet
-        result.ra = (message[1] & 0b1000_0000) >> 7 == 1;
-        result.z = (message[1] & 0b0100_0000) >> 6 == 1;
-        result.ad = (message[1] & 0b0010_0000) >> 5 == 1;
-        result.cd = (message[1] & 0b0001_0000) >> 4 == 1;
-        result.r_code = RCode::get_r_code((message[1] & 0b0000_1111) >> 0);
+        result.ra = (msg[1] & 0b1000_0000) >> 7 == 1;
+        result.z = (msg[1] & 0b0100_0000) >> 6 == 1;
+        result.ad = (msg[1] & 0b0010_0000) >> 5 == 1;
+        result.cd = (msg[1] & 0b0001_0000) >> 4 == 1;
+        result.r_code = RCode::get_r_code((msg[1] & 0b0000_1111) >> 0);
 
         result
+    }
+
+    pub fn enable_recursion(&mut self) {
+        self.rd = true;
     }
 }
 

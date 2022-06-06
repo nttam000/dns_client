@@ -1,35 +1,58 @@
-use dns_client;
+use dns_client::{query, query_with_options};
+use dns_client::{Answer, Error, Protocol};
 
 #[test]
-fn query() {
-    let query_result = dns_client::query("google.com");
+fn test_query() {
+    let query_result = query("google.com");
+    analyze_query_result(&query_result);
+}
 
-    let answers = match query_result {
+#[test]
+fn test_query_edns() {
+    let query_result = query_with_options("google.com", "8.8.8.8:53", true, Protocol::Udp, false);
+    analyze_query_result(&query_result);
+}
+
+#[test]
+fn test_query_tcp() {
+    let query_result = query_with_options("google.com", "8.8.8.8:53", false, Protocol::Tcp, false);
+
+    analyze_query_result(&query_result);
+}
+
+#[test]
+fn test_query_edns_tcp() {
+    let query_result = query_with_options("google.com", "8.8.8.8:53", true, Protocol::Tcp, false);
+
+    analyze_query_result(&query_result);
+}
+
+#[test]
+fn test_query_fallback() {
+    let query_result = query_with_options("google.com", "8.8.8.8:53", false, Protocol::Udp, true);
+
+    analyze_query_result(&query_result);
+}
+
+#[test]
+fn test_query_edns_fallback() {
+    let query_result = query_with_options("google.com", "8.8.8.8:53", true, Protocol::Udp, true);
+
+    analyze_query_result(&query_result);
+}
+
+fn analyze_query_result(result: &Result<Answer, Error>) {
+    let answers = match result {
         Ok(value) => value.get_answers().clone(),
         Err(error) => {
             panic!("failed, error_code: {}", error.get_error_code())
         }
     };
+    if answers.len() == 0 {
+        // in practise, this should not be a fault
+        panic!("failed, no answer");
+    }
     print_list_of_ips(&answers);
-}
-
-#[test]
-fn query_with_server() {
-    let query_result =
-        dns_client::query_with_server("google.com", "8.8.4.4:53");
-
-    let answers = match query_result {
-        Ok(value) => value.get_answers().clone(),
-        Err(error) => {
-            panic!("failed, error_code: {}", error.get_error_code())
-        }
-    };
-    print_list_of_ips(&answers);
-}
-
-#[test]
-fn quick_run() {
-    // this function is for whatever needs a quick check
 }
 
 fn print_list_of_ips(ips: &Vec<Vec<u8>>) {

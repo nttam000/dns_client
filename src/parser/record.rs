@@ -65,29 +65,16 @@ impl Record {
     pub fn encode(&self) -> Vec<u8> {
         let mut result = Vec::new();
         let mut domain_name = self.q_name.encode();
-        let mut type_and_class =
-            dns_types::encode_type_and_class(self.q_type, self.q_class);
+        let mut type_and_class = dns_types::encode_type_and_class(self.q_type, self.q_class);
 
         result.append(&mut domain_name);
         result.append(&mut type_and_class);
 
         // ttl
-        result.push(
-            ((self.ttl & 0b_1111_1111_0000_0000_0000_0000_0000_0000) >> 24)
-                as u8,
-        );
-        result.push(
-            ((self.ttl & 0b_0000_0000_1111_1111_0000_0000_0000_0000) >> 16)
-                as u8,
-        );
-        result.push(
-            ((self.ttl & 0b_0000_0000_0000_0000_1111_1111_0000_0000) >> 08)
-                as u8,
-        );
-        result.push(
-            ((self.ttl & 0b_0000_0000_0000_0000_0000_0000_1111_1111) >> 00)
-                as u8,
-        );
+        result.push(((self.ttl & 0b_1111_1111_0000_0000_0000_0000_0000_0000) >> 24) as u8);
+        result.push(((self.ttl & 0b_0000_0000_1111_1111_0000_0000_0000_0000) >> 16) as u8);
+        result.push(((self.ttl & 0b_0000_0000_0000_0000_1111_1111_0000_0000) >> 08) as u8);
+        result.push(((self.ttl & 0b_0000_0000_0000_0000_0000_0000_1111_1111) >> 00) as u8);
 
         // rd_data
         result.push(((self.rd_length & 0b_1111_1111_0000_0000) >> 8) as u8);
@@ -110,8 +97,7 @@ impl Record {
         pos += parsed_count as usize;
         result.q_name = domain_name;
 
-        let (q_type, q_class, parsed_count) =
-            dns_types::parse_type_and_class(msg, pos);
+        let (q_type, q_class, parsed_count) = dns_types::parse_type_and_class(msg, pos);
         pos += parsed_count as usize;
         result.q_type = q_type;
         result.q_class = q_class;
@@ -185,10 +171,5 @@ impl OptRecord {
             do_bit: false,
             z: 0,
         }
-    }
-
-    pub fn encode(&self) -> Vec<u8> {
-        let result = self.record.encode();
-        result
     }
 }

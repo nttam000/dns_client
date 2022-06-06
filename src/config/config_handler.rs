@@ -7,9 +7,11 @@ const CONFIG_FILE_PATH: &str = "config.toml";
 #[derive(Debug)]
 pub struct Config {
     pub udp_buffer_size: usize,
+    pub tcp_buffer_size: usize,
     pub protocol: String,
     pub tcp_fallback: bool,
     pub edns_enable: bool,
+    pub edns_buffer_size: usize,
     pub local_interface: String,
     pub default_servers: Vec<String>,
 }
@@ -20,12 +22,18 @@ lazy_static! {
 
 // todo: use something called serilization
 pub fn load_config() -> Config {
-    let contents = fs::read_to_string(CONFIG_FILE_PATH)
-        .expect("something wrong with reading file");
+    let contents = fs::read_to_string(CONFIG_FILE_PATH).expect("something wrong with reading file");
 
     let toml_value = contents.parse::<Value>().expect("invalid config file");
 
     let udp_buffer_size = match toml_value["udp_buffer_size"] {
+        Value::Integer(value) => value,
+        _ => {
+            panic!("")
+        }
+    };
+
+    let tcp_buffer_size = match toml_value["tcp_buffer_size"] {
         Value::Integer(value) => value,
         _ => {
             panic!("")
@@ -48,6 +56,13 @@ pub fn load_config() -> Config {
 
     let edns_enable = match toml_value["edns_enable"] {
         Value::Boolean(value) => value,
+        _ => {
+            panic!("")
+        }
+    };
+
+    let edns_buffer_size = match toml_value["edns_buffer_size"] {
+        Value::Integer(value) => value,
         _ => {
             panic!("")
         }
@@ -76,16 +91,16 @@ pub fn load_config() -> Config {
     };
 
     assert!(udp_buffer_size >= 512);
-    let result = Config {
+    Config {
         udp_buffer_size: udp_buffer_size as usize,
+        tcp_buffer_size: tcp_buffer_size as usize,
         protocol,
         tcp_fallback,
         edns_enable,
+        edns_buffer_size: edns_buffer_size as usize,
         local_interface,
         default_servers,
-    };
-
-    result
+    }
 }
 
 #[cfg(test)]
