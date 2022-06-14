@@ -1,0 +1,1 @@
+rm -rf registry target .package-cache
